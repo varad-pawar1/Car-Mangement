@@ -1,0 +1,17 @@
+.car-card {
+  border-radius: 10px;
+  overflow: hidden;
+}
+.car-card .card-img-top {
+  border-bottom: 1px solid #ddd;
+}
+.car-card .card-footer {
+  border-top: 1px solid #ddd;
+}
+.car-card .color-circle {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+}
