@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Filters from "../components/Filters";
 import CarCard from "../components/CarCard";
 import axios from "axios";
+
 function Home() {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -12,19 +13,19 @@ function Home() {
     minMileage: "",
     maxMileage: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 1;
+
   const fetchCars = async () => {
     try {
       const token = localStorage.getItem("token");
 
       // Use axios to fetch data with token in headers
-      const axiosResponse = await axios.get(
-        `${apiBaseUrl}/car/product`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const axiosResponse = await axios.get(`${apiBaseUrl}/car/product`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const responseData = axiosResponse.data;
       console.log(responseData);
@@ -77,16 +78,13 @@ function Home() {
     console.log("Deleting car with title:", title); // Log the title
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        `${apiBaseUrl}/car/product/${title}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await fetch(`${apiBaseUrl}/car/product/${title}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error(`Failed to delete car: ${response.statusText}`);
@@ -116,6 +114,17 @@ function Home() {
     });
   };
 
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCars = cars.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(cars.length / itemsPerPage);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
   return (
     <div className="container-fluid">
       <div className="row mt-4">
@@ -128,11 +137,88 @@ function Home() {
         </div>
         <div className="col-9">
           <div className="row">
-            {cars.map((car) => (
-              <div className="col-md-4" key={car.id}>
+            {currentCars.map((car) => (
+              <div className="col-md-4" key={car.title}>
                 <CarCard car={car} deleteCar={deleteCar} />
               </div>
             ))}
+          </div>
+          <div className="d-flex justify-content-center mt-4">
+            <nav>
+              <ul className="pagination">
+                {/* Previous Button */}
+                <li
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                  style={{
+                    cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                  }}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                </li>
+
+                {/* Pagination Buttons with Ellipses */}
+                {Array.from({ length: totalPages }, (_, index) => {
+                  const page = index + 1;
+
+                  if (
+                    page === 1 || // Always show the first page
+                    page === totalPages || // Always show the last page
+                    (page >= currentPage - 1 && page <= currentPage + 1) // Show current, one before, and one after
+                  ) {
+                    return (
+                      <li
+                        className={`page-item ${
+                          currentPage === page ? "active" : ""
+                        }`}
+                        key={page}
+                      >
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(page)}
+                        >
+                          {page}
+                        </button>
+                      </li>
+                    );
+                  } else if (
+                    (page === currentPage - 2 && currentPage > 3) || // Left ellipsis
+                    (page === currentPage + 2 && currentPage < totalPages - 2) // Right ellipsis
+                  ) {
+                    return (
+                      <li className="page-item" key={page}>
+                        <span className="page-link">...</span>
+                      </li>
+                    );
+                  }
+                  return null; // Hide pages not meeting conditions
+                })}
+
+                {/* Next Button */}
+                <li
+                  className={`page-item ${
+                    currentPage === totalPages ? "disabled" : ""
+                  }`}
+                  style={{
+                    cursor:
+                      currentPage === totalPages ? "not-allowed" : "pointer",
+                  }}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </li>
+              </ul>
+            </nav>
           </div>
         </div>
       </div>
