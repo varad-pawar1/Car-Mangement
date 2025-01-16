@@ -14,7 +14,7 @@ function Home() {
     maxMileage: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 1;
+  const itemsPerPage = 6;
 
   const fetchCars = async () => {
     try {
@@ -167,9 +167,9 @@ function Home() {
                   const page = index + 1;
 
                   if (
-                    page === 1 || // Always show the first page
-                    page === totalPages || // Always show the last page
-                    (page >= currentPage - 1 && page <= currentPage + 1) // Show current, one before, and one after
+                    page === 1 ||
+                    page === totalPages || 
+                    (page >= currentPage - 1 && page <= currentPage + 1) 
                   ) {
                     return (
                       <li
